@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ciphermap": {
+      "type": "stdio",
+      "command": "ciphermap",
+      "args": ["mcp", "--workspace", "."]
+    }
+  }
+}
