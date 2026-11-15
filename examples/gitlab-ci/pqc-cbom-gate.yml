@@ -1,0 +1,109 @@
+spec:
+  inputs:
+    stage:
+      type: string
+      default: test
+      regex: '^[a-zA-Z0-9_-]+$'
+      description: "Pipeline stage in which to run the offline CipherMap readiness gate"
+    target_profile:
+      type: string
+      default: cnsa-2.0
+      options:
+        - cnsa-2.0
+        - nist-sp-800-56b
+        - fips-140-3
+        - bsi-tr-02102
+        - anssi-pqc
+      description: "Cryptographic target profile evaluated offline"
+    cbom_spec_version:
+      type: string
+      default: "1.7"
+      options:
+        - "1.6"
+        - "1.7"
+      description: "CycloneDX CBOM specification version (1.6 or 1.7 ECMA-424)"
+    fail_on_drift:
+      type: string
+      default: high
+      options:
+        - critical
+        - high
+        - medium
+        - low
+        - info
+        - none
+      description: "Severity threshold when diffing against .ciphermap/baseline-cbom.json"
+---
+ciphermap-readiness-gate:
+  stage: $[[ inputs.stage ]]
+  image: ubuntu:24.04
+  variables:
+    GIT_DEPTH: "0"
+    CIPHERMAP_OFFLINE: "1"
+    CM_INSTALLER_SHA256: "f28b1bb75700bdff32867ddb3b61857bed421aa8cc088c4e665f4fbc3017c797"
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends ca-certificates curl
+    - |
+      set -euo pipefail
+      if ! command -v ciphermap >/dev/null 2>&1; then
+        effective_license="${CIPHERMAP_LICENSE_KEY:-${CIPHERMAP_LICENSE:-}}"
+        if [ -n "${effective_license}" ] && [ "$(uname -s)" = "Linux" ] && [ "$(uname -m)" = "x86_64" ]; then
+          mkdir -p "${HOME}/.local/bin"
+          hdr_tmp="$(mktemp)"
+          bin_tmp="$(mktemp)"
+          trap 'rm -f "$hdr_tmp" "$bin_tmp"' EXIT
+          curl --proto '=https' --tlsv1.2 --fail --silent --show-error --max-time 60 \
+            -H "Authorization: Bearer ${effective_license}" \
+            -H "X-CipherMap-CI-Provider: gitlab-ci" \
+            -D "$hdr_tmp" \
+            --output "$bin_tmp" \
+            "https://www.ciphermap.io/api/dl/ci-cli"
+          expected_bin_sha="$(awk 'tolower($1)=="x-ciphermap-sha256:" {gsub(/\r/,"",$2); print $2}' "$hdr_tmp")"
+          [[ "${expected_bin_sha}" =~ ^[0-9a-f]{64}$ ]] || { echo "Missing X-CipherMap-SHA256 header" >&2; exit 1; }
+          echo "${expected_bin_sha}  ${bin_tmp}" | sha256sum --check --status
+          chmod 0755 "$bin_tmp"
+          mv "$bin_tmp" "${HOME}/.local/bin/ciphermap"
+        else
+          installer="$(mktemp)"
+          trap 'rm -f "$installer"' EXIT
+          http_code="$(curl --proto '=https' --tlsv1.2 --silent --show-error --location --max-time 60 -w '%{http_code}' --output "$installer" "https://www.ciphermap.io/install.sh?src=gitlab-component" || true)"
+          if [ "${http_code}" = "503" ]; then
+            echo "CipherMap public /install.sh is staged; configure CIPHERMAP_LICENSE_KEY (free 7-day trial or commercial key from https://www.ciphermap.io/eval-pack#trial) on Linux x86_64 to use /api/dl/ci-cli, or pre-bake /usr/local/bin/ciphermap on your self-hosted runner." >&2
+            exit 1
+          fi
+          [ "${http_code}" = "200" ] || { echo "Failed to fetch CipherMap installer (HTTP ${http_code})" >&2; exit 1; }
+          echo "${CM_INSTALLER_SHA256}  ${installer}" | sha256sum -c -
+          bash "$installer"
+        fi
+        export PATH="${HOME}/.local/bin:${PATH}"
+      fi
+  script:
+    - export PATH="${HOME}/.local/bin:${PATH}"
+    - ciphermap --version
+    - ciphermap doctor --offline
+    - ciphermap preflight . --offline --no-telemetry --format json --output ciphermap-preflight.json
+    - |
+      SCAN_EXIT=0
+      ciphermap scan . --offline --no-telemetry --include-archives --target "$[[ inputs.target_profile ]]" --format sarif --output ciphermap.sarif || SCAN_EXIT=$?
+      if [ "${SCAN_EXIT}" -gt 1 ]; then
+        exit "${SCAN_EXIT}"
+      fi
+      if [ -n "${CIPHERMAP_LICENSE_KEY:-${CIPHERMAP_LICENSE:-}}" ]; then
+        export CIPHERMAP_LICENSE="${CIPHERMAP_LICENSE_KEY:-${CIPHERMAP_LICENSE:-}}"
+        ciphermap cbom . --offline --no-telemetry --include-archives --spec-version "$[[ inputs.cbom_spec_version ]]" --format cyclonedx --output cbom.cdx.json
+        if [ -f ".ciphermap/baseline-cbom.json" ]; then
+          ciphermap cbom . --offline --no-telemetry --diff-against=.ciphermap/baseline-cbom.json --fail-on "$[[ inputs.fail_on_drift ]]"
+        fi
+      fi
+      exit "${SCAN_EXIT}"
+  artifacts:
+    when: always
+    paths:
+      - ciphermap-preflight.json
+      - ciphermap.sarif
+      - cbom.cdx.json
+    reports:
+      sast: ciphermap.sarif
+      cyclonedx:
+        - cbom.cdx.json
+    expire_in: 30 days
