@@ -96,7 +96,7 @@ Use [`Ciphermap-io/ciphermap-action`](https://github.com/Ciphermap-io/ciphermap-
 
 ```yaml
       - name: Run CipherMap Zero-Egress PQC & CycloneDX 1.7 CBOM Gate
-        uses: Ciphermap-io/ciphermap-action@4f5d1c8a0c4bf2aadee801b70475e67833095ac8 # v1.0.6
+        uses: Ciphermap-io/ciphermap-action@d4e04f4cbee44d60f7f2aa0ac981a4a3287eae9e # v1.0.6
         with:
           fail-on: high
           target: cnsa-2.0

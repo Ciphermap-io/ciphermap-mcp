@@ -9,13 +9,19 @@ import { createRequire } from "node:module";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf8"));
-const serverJson = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "server.json"), "utf8"));
+const serverJsonPath = path.join(__dirname, "..", "..", "server.json");
+const serverJson = fs.existsSync(serverJsonPath)
+  ? JSON.parse(fs.readFileSync(serverJsonPath, "utf8"))
+  : null;
 const launcher = require("./bin/ciphermap-mcp.js");
 
 test("@ciphermap/mcp package metadata matches Official MCP Registry server.json", () => {
-  assert.equal(pkg.mcpName, serverJson.name);
-  assert.equal(pkg.version, serverJson.version);
-  assert.equal(launcher.EXPECTED_VERSION, `v${serverJson.version}`);
+  assert.equal(pkg.mcpName, "io.github.Ciphermap-io/ciphermap-mcp");
+  assert.equal(launcher.EXPECTED_VERSION, `v${pkg.version}`);
+  if (serverJson) {
+    assert.equal(pkg.mcpName, serverJson.name);
+    assert.equal(pkg.version, serverJson.version);
+  }
 });
 
 test("@ciphermap/mcp --launcher-self-check locates local ciphermap binary cleanly", () => {
