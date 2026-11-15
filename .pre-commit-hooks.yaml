@@ -1,0 +1,22 @@
+# pre-commit (pre-commit.com) hook definition for CipherMap (v1.0.6+).
+#
+# Usage in .pre-commit-config.yaml:
+#
+#   repos:
+#     - repo: https://github.com/Ciphermap-io/ciphermap-mcp
+#       rev: v1.0.6
+#       hooks:
+#         - id: ciphermap
+#
+# language: script, NOT language: golang — requires the signed `ciphermap`
+# binary on PATH and executes 100% offline (`--staged --offline --fail-on high --quiet`).
+- id: ciphermap
+  name: CipherMap post-quantum crypto & AI-config gate
+  description: >-
+    Fails the commit offline when quantum-vulnerable cryptography or poisoned
+    AI-agent configs at or above HIGH severity are staged. Identical gate to
+    `ciphermap hook install`.
+  entry: scripts/pre-commit-hook.sh
+  language: script
+  pass_filenames: false
+  always_run: true

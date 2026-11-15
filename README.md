@@ -1,25 +1,37 @@
-# CipherMap Local MCP Referee & CI/CD Integration Guide
+<!-- mcp-name: io.github.Ciphermap-io/ciphermap-mcp -->
 
-Configuration templates and reference workflows for running **[CipherMap](https://www.ciphermap.io)** (`v1.0.0`) as:
-1. A **100% local `stdio` Model Context Protocol (MCP) AI Referee** inside **Claude Code**, **Cursor**, and **Windsurf** (`ciphermap mcp --workspace .`).
-2. A **zero-egress CI/CD gate & signed CycloneDX 1.6 CBOM generator** in **GitHub Actions** and **GitLab CI**.
+# CipherMap Local MCP Referee, `pre-commit` Hook & Multi-SCM CI Integration (`v1.0.6`)
 
-> **Zero Source Egress:** CipherMap ships as native Apple Developer ID (`ZLF7244KA7`) and Microsoft Authenticode signed binaries ([download evaluation pack](https://www.ciphermap.io/eval-pack)). No source code, keys, or AST fragments ever leave your workstation or self-hosted runner (`--offline --no-telemetry`).
+Configuration templates, `pre-commit` hook definitions, and Official MCP Registry metadata (`server.json`) for running **[CipherMap](https://www.ciphermap.io)** (`v1.0.6`) as:
+1. A **100% local `stdio` Model Context Protocol (MCP) Referee** (`11` tools, `0` open network sockets) inside **Claude Code**, **Cursor**, **VS Code (`@mcp`)**, **GitHub Copilot**, and **Windsurf** (`ciphermap mcp --workspace .`).
+2. A **shift-left `pre-commit` hook** scanning staged diffs in `<250ms` (`--staged --offline`).
+3. A **zero-egress CI/CD gate & signed CycloneDX 1.6 / 1.7 (ECMA-424) CBOM generator** across **GitHub Actions**, **Bitbucket Pipelines / Data Center**, **GitLab CI**, and **Azure DevOps**.
+
+[![Public GitHub Repo PQC Scanner](https://www.ciphermap.io/scan/badge/github/open-quantum-safe/liboqs-go)](https://www.ciphermap.io/scan?utm_source=mcp_readme&utm_medium=badge)
+
+> **Zero Source Egress:** CipherMap ships as native Apple Developer ID (`ZLF7244KA7`) and Microsoft Authenticode signed binaries ([download evaluation pack](https://www.ciphermap.io/eval-pack)). No source code, `.p12`/`.jks` keystores, or AST fragments ever leave your workstation or self-hosted runner (`--offline --no-telemetry`).
 
 ---
 
-## 1. Local `stdio` MCP Server (`ciphermap mcp`)
+## 1. Local `stdio` MCP Server (`ciphermap mcp` — 11 Tools in `v1.0.6`)
 
-CipherMap's Tier B Enterprise MCP server runs locally over `stdio` JSON-RPC 2.0 with zero open network sockets and exposes **4 deterministic verification tools**:
+CipherMap's local MCP server auto-detects both newline-delimited JSON-RPC 2.0 and `Content-Length` framed `stdio` with zero network egress, exposing **11 deterministic verification & compliance tools**:
 
 | MCP Tool | Purpose |
 |---|---|
-| `ciphermap_scan_all` | Runs local 12-language PQC (`PQC-*`, `PQC-PRE-001..005`) and structural bug-class (`IMM-*`) discovery on the workspace. |
-| `ciphermap_inspect_rule` | Returns NIST FIPS 203/204/205, CNSA 2.0, CWE, and protocol-safety constraints for any rule ID before an AI coding agent drafts a patch. |
-| `ciphermap_verify_candidate_fix` | Runs AST/taint verification, compiler build, repository test suite, and network-denied OS witness gates on a candidate diff—returning structured rejection diagnostics if unsafe. |
-| `ciphermap_verify_workspace_clean` | Verifies the workspace passes active policy and monotonic ratchet thresholds (`0` regressions) prior to commit. |
+| `ciphermap_scan_all` | Runs local 12-language PQC (`PQC-*`, `PQC-PRE-001..005`, `.jar`/`.p12`) and structural handler/AI-config (`IMM-*`, `IMM-AICFG-001`) discovery. |
+| `ciphermap_check_baseline_health` | Runs sandboxed `T0` compiler/typecheck health probes and formal `T0`/`T1` fault attribution before edits. |
+| `ciphermap_inspect_rule` | Returns NIST FIPS 203/204/205, CNSA 2.0, `SC-081` 100-day TLS, CWE, and wire-protocol constraints before an agent drafts code. |
+| `ciphermap_recommend_pqc_sdk` | Recommends constant-time finalized FIPS 203 (`ML-KEM`), FIPS 204 (`ML-DSA`), and FIPS 205 (`SLH-DSA`) libraries (preventing Round-3 `kyber768`/`dilithium3` drift). |
+| `ciphermap_verify_dependencies` | Firewalls proposed PQC/crypto packages against slopsquatting and timing-unsafe fallbacks. |
+| `ciphermap_extinguish_immunity` | Synthesizes polyglot AST & `.cursorrules`/`CLAUDE.md`/`.mcp.json` codemods verified via 4-Gate compiler/test witnesses + `ddmin` salvage. |
+| `ciphermap_verify_candidate_fix` | Stages candidate edits inside an ephemeral network-denied sandbox copy (never mutating live files) and returns structured counterexamples on failure. |
+| `ciphermap_verify_workspace_clean` | Verifies zero remaining policy blockers and validates `Ed25519 + ML-DSA-65` ProofBundles prior to commit. |
+| `ciphermap_generate_cbom` | Emits deterministic CycloneDX 1.7 or 1.6 (ECMA-424) CBOM summaries across source, `.jar`/`.whl` archives, and `.p12`/`.jks` keystores. |
+| `ciphermap_generate_pqc_wrapper` | Previews zero-code compensating PQC termination configs (`Envoy`, `NGINX`, `HAProxy`, `K8s`, `IPsec`, `cert-manager`, `CNSA 2.0`). |
+| `ciphermap_compliance_crosswalk` | Maps workspace cryptographic assets across **16 global regulatory mandates** (`CNSA 2.0`, `PCI-DSS 4.0.1`, `FedRAMP`, `CMMC 2.0`, `EU DORA`, `NIS2`, `OSCAL 1.1.2`, etc.). |
 
-### Cursor (`.cursor/mcp.json`)
+### Cursor (`.cursor/mcp.json`) & VS Code (`.vscode/mcp.json`)
 
 ```json
 {
@@ -46,7 +58,7 @@ CipherMap's Tier B Enterprise MCP server runs locally over `stdio` JSON-RPC 2.0 
 }
 ```
 
-### Synthesizing `.cursor/rules` & `CLAUDE.md` Guardrails
+### Emit 5-Agent Herd-Immunity Guardrails (`Cursor`, `Claude Code`, `Copilot`, `Windsurf`, `Gemini`)
 
 ```bash
 ciphermap immunity emit-agent-rules . --write
@@ -54,54 +66,47 @@ ciphermap immunity emit-agent-rules . --write
 
 ---
 
-## 2. Zero-Egress CycloneDX 1.6 CBOM & SARIF in GitHub Actions
+## 2. Shift-Left `pre-commit` Hook (`<250ms` Offline Staged Scan)
+
+Add to `.pre-commit-config.yaml` to block legacy crypto regressions, Round-3 `kyber768` hallucinations, and Trojan Unicode `.cursorrules`/`CLAUDE.md` poisoning (`IMM-AICFG-001`) before commit:
 
 ```yaml
-name: PQC & CycloneDX 1.6 CBOM Gate
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-  security-events: write
-
-jobs:
-  pqc-cbom:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Free Offline PQC SARIF Scan
-        run: |
-          ciphermap scan . --offline --no-telemetry --exclude-vendored --format sarif -o results.sarif
-          ciphermap scan . --offline --no-telemetry --exclude-vendored --fail-on high
-
-      - name: Upload SARIF to GitHub Code Scanning
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
-
-      - name: Generate Signed CycloneDX 1.6 CBOM (Tier A / Pro Trial)
-        if: env.CIPHERMAP_LICENSE != ''
-        env:
-          CIPHERMAP_LICENSE: ${{ secrets.CIPHERMAP_LICENSE }}
-        run: |
-          ciphermap cbom . --offline --no-telemetry -o cbom.cdx.json
+repos:
+  - repo: https://github.com/Ciphermap-io/ciphermap-mcp
+    rev: v1.0.6
+    hooks:
+      - id: ciphermap
 ```
 
 ---
 
-## Links & Specifications
+## 3. Enterprise GitHub Actions (`Ciphermap-io/ciphermap-action`) & OWASP Dependency-Track v5 CBOM Ingestion
 
-- **Evaluation Pack (macOS / Linux / Windows signed CLI):** [https://www.ciphermap.io/eval-pack](https://www.ciphermap.io/eval-pack)
-- **7-Day Tier A Pro Trial (Signed CBOM Export):** [https://www.ciphermap.io/beta](https://www.ciphermap.io/beta)
-- **Full CLI Reference:** [https://www.ciphermap.io/docs](https://www.ciphermap.io/docs)
-- **Technical Comparison Matrix:** [https://www.ciphermap.io/compare](https://www.ciphermap.io/compare)
-- **LLM Technical Reference:** [https://www.ciphermap.io/llms-full.txt](https://www.ciphermap.io/llms-full.txt)
+Use [`Ciphermap-io/ciphermap-action`](https://github.com/Ciphermap-io/ciphermap-action) (pinned to its immutable 40-char commit SHA) to upload SARIF 2.1.0 to **GitHub Code Scanning** and stream signed **CycloneDX 1.7 CBOMs** straight into **OWASP Dependency-Track v5**:
 
-## License
+```yaml
+      - name: Run CipherMap Zero-Egress PQC & CycloneDX 1.7 CBOM Gate
+        uses: Ciphermap-io/ciphermap-action@b1379b1e9e40b396d0f15844feb01f15b3378b7c # v1.0.6
+        with:
+          fail-on: high
+          target: cnsa-2.0
+          include-archives: "true"
+          cbom-file: cbom.cdx.json
+          cbom-spec-version: "1.7"
+          license-key: ${{ secrets.CIPHERMAP_LICENSE }}
 
-Documentation and configuration templates in this repository are licensed under the MIT License. CipherMap CLI binaries are proprietary software published by Ciphermap Technologies LLC ([commercial terms](https://www.ciphermap.io/terms)).
+      - name: Upload CycloneDX 1.7 CBOM to OWASP Dependency-Track v5 (Optional)
+        if: env.DTRACK_API_KEY != ''
+        env:
+          DTRACK_URL: ${{ secrets.DTRACK_URL }}
+          DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
+          DTRACK_PROJECT_UUID: ${{ secrets.DTRACK_PROJECT_UUID }}
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL -X POST "${DTRACK_URL}/api/v1/bom" \
+            -H "X-Api-Key: ${DTRACK_API_KEY}" \
+            -F "project=${DTRACK_PROJECT_UUID}" \
+            -F "bom=@cbom.cdx.json"
+```
+
+- **Instant Public GitHub & Bitbucket URL Scanner:** [https://www.ciphermap.io/scan](https://www.ciphermap.io/scan)
+- **Methodology & Scope Boundaries:** [https://www.ciphermap.io/methodology](https://www.ciphermap.io/methodology)

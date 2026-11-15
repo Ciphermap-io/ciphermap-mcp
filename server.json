@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Ciphermap-io/ciphermap-mcp",
+  "title": "CipherMap PQC, CycloneDX 1.7 CBOM & Compliance Referee",
+  "description": "Zero-egress PQC, CycloneDX 1.7 CBOM, CNSA 2.0/FIPS 203-205 & AI-config referee across 12 langs.",
+  "version": "1.0.6",
+  "websiteUrl": "https://www.ciphermap.io",
+  "repository": {
+    "id": "1442914839",
+    "source": "github",
+    "url": "https://github.com/Ciphermap-io/ciphermap-mcp"
+  },
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "vendor": "Ciphermap Technologies LLC",
+      "transport": "stdio",
+      "egress": "none (--offline --no-telemetry)",
+      "toolCount": 11,
+      "standards": [
+        "NIST FIPS 203 ML-KEM",
+        "NIST FIPS 204 ML-DSA",
+        "NIST FIPS 205 SLH-DSA",
+        "NSA CNSA 2.0",
+        "CycloneDX 1.6 & 1.7 (ECMA-424) CBOM",
+        "PCI-DSS 4.0.1 Req 12.3.4",
+        "FedRAMP 20x / CMMC 2.0"
+      ]
+    }
+  }
+}
