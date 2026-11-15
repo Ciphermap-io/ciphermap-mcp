@@ -1,12 +1,18 @@
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const { execFileSync } = require("node:child_process");
-const path = require("node:path");
-const pkg = require("./package.json");
+import test from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf8"));
+const serverJson = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "server.json"), "utf8"));
 const launcher = require("./bin/ciphermap-mcp.js");
 
 test("@ciphermap/mcp package metadata matches Official MCP Registry server.json", () => {
-  const serverJson = require("../../server.json");
   assert.equal(pkg.mcpName, serverJson.name);
   assert.equal(pkg.version, serverJson.version);
   assert.equal(launcher.EXPECTED_VERSION, `v${serverJson.version}`);
