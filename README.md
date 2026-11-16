@@ -4,6 +4,7 @@
 
 [![Validate MCP Server Schema & Stdio Protocol](https://github.com/Ciphermap-io/ciphermap-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Ciphermap-io/ciphermap-mcp/actions/workflows/ci.yml)
 [![Official MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.Ciphermap--io%2Fciphermap--mcp-7c3aed)](https://registry.modelcontextprotocol.io/v0/servers?search=ciphermap)
+[![Ciphermap-io/ciphermap-mcp MCP server](https://glama.ai/mcp/servers/Ciphermap-io/ciphermap-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Ciphermap-io/ciphermap-mcp)
 [![CycloneDX CBOM](https://img.shields.io/badge/CycloneDX-1.6%20%26%201.7%20CBOM-0ea5e9)](https://cyclonedx.org/tool-center/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg)](LICENSE)
 
