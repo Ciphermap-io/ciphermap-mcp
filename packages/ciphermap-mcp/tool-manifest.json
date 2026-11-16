@@ -230,7 +230,7 @@
   },
   {
     "name": "ciphermap_generate_pqc_wrapper",
-    "description": "Generate a zero-code NIST FIPS 203/204/205 post-quantum compensating control bundle (envoy, nginx, k8s-sidecar, ipsec, cert-manager, or cnsa-2.0) plus preflight verification script for legacy/COTS/infrastructure findings.",
+    "description": "Generate a zero-code NIST FIPS 203/204/205 post-quantum compensating control bundle (envoy, nginx, haproxy, caddy, traefik, apache, stunnel, k8s-sidecar, ipsec, cert-manager, or cnsa-2.0) plus preflight verification script for legacy/COTS/infrastructure findings.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
@@ -247,7 +247,7 @@
           "type": "string"
         },
         "wrapper_type": {
-          "description": "Wrapper target ('auto', 'envoy', 'nginx', 'k8s-sidecar', 'ipsec', 'cert-manager', or 'cnsa-2.0'). Defaults to 'auto'.",
+          "description": "Wrapper target ('auto', 'envoy', 'nginx', 'haproxy', 'caddy', 'traefik', 'apache', 'stunnel', 'k8s-sidecar', 'ipsec', 'cert-manager', or 'cnsa-2.0'). Defaults to 'auto'.",
           "type": "string"
         }
       },

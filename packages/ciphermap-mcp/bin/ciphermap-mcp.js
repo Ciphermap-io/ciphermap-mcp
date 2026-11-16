@@ -7,7 +7,8 @@
  * Security invariants:
  *   1. Prefers a verified local `ciphermap` binary already installed on PATH,
  *      `/usr/local/bin/ciphermap`, `~/.local/bin/ciphermap`, or `~/.cache/ciphermap/bin/ciphermap`.
- *   2. On Linux x86_64 when `CIPHERMAP_LICENSE` is set and no local binary exists,
+ *   2. Across macOS (Apple Notarized arm64/amd64), Windows (Authenticode amd64/arm64),
+ *      and Linux (amd64/arm64) when `CIPHERMAP_LICENSE` is set and no local binary exists,
  *      authenticates over TLS 1.2+ to `https://www.ciphermap.io/api/dl/ci-cli` and
  *      verifies the `X-CipherMap-SHA256` digest before chmod + atomic rename.
  *   3. When no local native binary is installed yet (or `--introspect-only` is passed),
@@ -74,22 +75,49 @@ function findInstalledBinary() {
   return null;
 }
 
-function downloadLinuxX64WithLicense(licenseKey) {
+function resolveNativeTarget(platform = process.platform, arch = process.arch) {
+  const cmOs =
+    platform === "linux"
+      ? "linux"
+      : platform === "darwin"
+        ? "darwin"
+        : platform === "win32"
+          ? "windows"
+          : null;
+  const cmArch =
+    arch === "x64"
+      ? "amd64"
+      : arch === "arm64"
+        ? "arm64"
+        : null;
+  if (!cmOs || !cmArch) return null;
+  return {
+    os: cmOs,
+    arch: cmArch,
+    exeName: cmOs === "windows" ? "ciphermap.exe" : "ciphermap"
+  };
+}
+
+function downloadNativeBinaryWithLicense(licenseKey, target = resolveNativeTarget()) {
+  if (!target) {
+    return Promise.reject(new Error(`Unsupported platform/arch: ${process.platform}/${process.arch}`));
+  }
   return new Promise((resolve, reject) => {
     const cacheDir = path.join(os.homedir(), ".cache", "ciphermap", "bin");
     fs.mkdirSync(cacheDir, { recursive: true });
     const tmpFile = path.join(cacheDir, `.ciphermap-${process.pid}-${Date.now()}.tmp`);
-    const destFile = path.join(cacheDir, "ciphermap");
+    const destFile = path.join(cacheDir, target.exeName);
+    const downloadUrl = `${CI_CLI_ORIGIN}?os=${encodeURIComponent(target.os)}&arch=${encodeURIComponent(target.arch)}`;
 
     const req = https.get(
-      CI_CLI_ORIGIN,
+      downloadUrl,
       {
         minVersion: "TLSv1.2",
         timeout: 60_000,
         headers: {
           Authorization: `Bearer ${licenseKey}`,
-          "X-CipherMap-CI-Provider": "mcp-npx-launcher",
-          "User-Agent": `@ciphermap/mcp/${SERVER_VERSION}`
+          "X-CipherMap-CI-Provider": "mcp-launcher",
+          "User-Agent": `@ciphermap/mcp/${SERVER_VERSION} (${target.os}-${target.arch})`
         }
       },
       (res) => {
@@ -113,7 +141,9 @@ function downloadLinuxX64WithLicense(licenseKey) {
               try { fs.unlinkSync(tmpFile); } catch {}
               return reject(new Error(`SHA-256 mismatch: expected ${expectedSha}, got ${actualSha}`));
             }
-            fs.chmodSync(tmpFile, 0o755);
+            if (target.os !== "windows") {
+              fs.chmodSync(tmpFile, 0o755);
+            }
             fs.renameSync(tmpFile, destFile);
             resolve(destFile);
           });
@@ -278,10 +308,11 @@ async function main() {
 
   let binPath = findInstalledBinary();
   const licenseKey = (process.env.CIPHERMAP_LICENSE || process.env.CIPHERMAP_LICENSE_KEY || "").trim();
+  const nativeTarget = resolveNativeTarget();
 
-  if (!binPath && process.platform === "linux" && process.arch === "x64" && licenseKey) {
+  if (!binPath && nativeTarget && licenseKey) {
     try {
-      binPath = await downloadLinuxX64WithLicense(licenseKey);
+      binPath = await downloadNativeBinaryWithLicense(licenseKey, nativeTarget);
     } catch (err) {
       process.stderr.write(`[@ciphermap/mcp] Authenticated binary bootstrap failed: ${err.message}\n`);
     }
@@ -317,6 +348,7 @@ if (require.main === module) {
 module.exports = {
   candidateBinaryPaths,
   findInstalledBinary,
+  resolveNativeTarget,
   handleJsonRpcRequest,
   TOOL_MANIFEST,
   EXPECTED_VERSION

@@ -66,3 +66,13 @@ test("@ciphermap/mcp --introspect-only speaks full MCP JSON-RPC 2.0 over stdio",
   assert.match(lines[2].result.content[0].text, /eval-pack#trial/);
   assert.equal(lines[3].id, 4);
 });
+
+test("@ciphermap/mcp resolveNativeTarget maps macOS, Windows, and Linux x64/arm64 cleanly", () => {
+  assert.deepEqual(launcher.resolveNativeTarget("darwin", "arm64"), { os: "darwin", arch: "arm64", exeName: "ciphermap" });
+  assert.deepEqual(launcher.resolveNativeTarget("darwin", "x64"), { os: "darwin", arch: "amd64", exeName: "ciphermap" });
+  assert.deepEqual(launcher.resolveNativeTarget("win32", "x64"), { os: "windows", arch: "amd64", exeName: "ciphermap.exe" });
+  assert.deepEqual(launcher.resolveNativeTarget("win32", "arm64"), { os: "windows", arch: "arm64", exeName: "ciphermap.exe" });
+  assert.deepEqual(launcher.resolveNativeTarget("linux", "x64"), { os: "linux", arch: "amd64", exeName: "ciphermap" });
+  assert.deepEqual(launcher.resolveNativeTarget("linux", "arm64"), { os: "linux", arch: "arm64", exeName: "ciphermap" });
+  assert.equal(launcher.resolveNativeTarget("freebsd", "x64"), null);
+});

@@ -15,7 +15,7 @@ Configuration templates, `pre-commit` hook definitions, and Official MCP Registr
 
 [![Public GitHub Repo PQC Scanner](https://www.ciphermap.io/scan/badge/github/open-quantum-safe/liboqs-go)](https://www.ciphermap.io/scan?utm_source=mcp_readme&utm_medium=badge)
 
-> **Zero Source Egress:** CipherMap ships as native Apple Developer ID (`ZLF7244KA7`) and Microsoft Authenticode signed binaries ([download evaluation pack](https://www.ciphermap.io/eval-pack)). No source code, `.p12`/`.jks` keystores, or AST fragments ever leave your workstation or self-hosted runner (`--offline --no-telemetry`).
+> **Zero Source Egress:** CipherMap ships as native Apple Developer ID (`ZLF7244KA7`, Apple Notarized) and Microsoft Authenticode signed binaries ([download evaluation pack](https://www.ciphermap.io/eval-pack)). No source code, `.p12`/`.jks` keystores, or AST fragments ever leave your workstation or self-hosted runner (`--offline --no-telemetry`).
 
 ---
 
@@ -34,7 +34,7 @@ CipherMap's local MCP server auto-detects both newline-delimited JSON-RPC 2.0 an
 | `ciphermap_verify_candidate_fix` | Stages candidate edits inside an ephemeral network-denied sandbox copy (never mutating live files) and returns structured counterexamples on failure. |
 | `ciphermap_verify_workspace_clean` | Verifies zero remaining policy blockers and validates `Ed25519 + ML-DSA-65` ProofBundles prior to commit. |
 | `ciphermap_generate_cbom` | Emits deterministic CycloneDX 1.7 or 1.6 (ECMA-424) CBOM summaries across source, `.jar`/`.whl` archives, and `.p12`/`.jks` keystores. |
-| `ciphermap_generate_pqc_wrapper` | Previews zero-code compensating PQC termination configs (`Envoy`, `NGINX`, `HAProxy`, `K8s`, `IPsec`, `cert-manager`, `CNSA 2.0`). |
+| `ciphermap_generate_pqc_wrapper` | Previews zero-code compensating PQC termination configs (`Envoy`, `NGINX`, `HAProxy`, `Caddy`, `Traefik`, `Apache`, `stunnel`, `K8s`, `IPsec`, `cert-manager`, `CNSA 2.0`). |
 | `ciphermap_compliance_crosswalk` | Maps workspace cryptographic assets across **16 global regulatory mandates** (`CNSA 2.0`, `PCI-DSS 4.0.1`, `FedRAMP`, `CMMC 2.0`, `EU DORA`, `NIS2`, `OSCAL 1.1.2`, etc.). |
 
 ### Cursor (`.cursor/mcp.json`) & VS Code (`.vscode/mcp.json`)
