@@ -3,6 +3,7 @@
   "version": "1.0.6",
   "description": "Zero-egress local stdio MCP Referee launcher for CipherMap (11 tools: PQC discovery, CycloneDX 1.6/1.7 CBOM, NIST FIPS 203-205, CNSA 2.0, 4-Gate compiler verification & AI-config shield).",
   "mcpName": "io.github.Ciphermap-io/ciphermap-mcp",
+  "author": "Ciphermap Technologies LLC <security@ciphermap.io> (https://www.ciphermap.io)",
   "license": "MIT",
   "type": "commonjs",
   "bin": {
@@ -11,8 +12,12 @@
   "files": [
     "bin/",
     "tool-manifest.json",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
@@ -36,6 +41,7 @@
     "fips-203",
     "appsec",
     "claude-code",
-    "cursor"
+    "cursor",
+    "vscode"
   ]
 }

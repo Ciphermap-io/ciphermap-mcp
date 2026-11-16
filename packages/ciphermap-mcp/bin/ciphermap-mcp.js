@@ -12,9 +12,9 @@
  *      authenticates over TLS 1.2+ to `https://www.ciphermap.io/api/dl/ci-cli` and
  *      verifies the `X-CipherMap-SHA256` digest before chmod + atomic rename.
  *   3. When no local native binary is installed yet (or `--introspect-only` is passed),
- *      serves compliant MCP JSON-RPC 2.0 over stdio (`initialize`, `ping`, `tools/list`,
- *      `resources/list`, `prompts/list`) exposing all 11 authentic v1.0.6 tool schemas
- *      with TDQS annotations, and returns actionable setup guidance on `tools/call` —
+ *      serves compliant MCP JSON-RPC 2.0 over stdio (auto-detecting both newline-delimited
+ *      JSON-RPC and LSP-style `Content-Length` framing) exposing all 11 authentic v1.0.6
+ *      tool schemas with TDQS annotations, and returns actionable setup guidance on `tools/call` —
  *      without bundling any closed-source binary or opening network sockets.
  */
 
@@ -24,12 +24,16 @@ const fs = require("node:fs");
 const https = require("node:https");
 const os = require("node:os");
 const path = require("node:path");
-const readline = require("node:readline");
 
-const EXPECTED_VERSION = "v1.0.6";
-const SERVER_VERSION = "1.0.6";
+const PKG_META = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8")
+);
+const SERVER_VERSION = String(PKG_META.version || "1.0.6");
+const EXPECTED_CLI_VERSION = "v1.0.6";
+const EXPECTED_VERSION = EXPECTED_CLI_VERSION;
 const SERVER_NAME = "io.github.Ciphermap-io/ciphermap-mcp";
 const CI_CLI_ORIGIN = "https://www.ciphermap.io/api/dl/ci-cli";
+const MAX_FRAME_BYTES = 4 * 1024 * 1024;
 const SERVER_INSTRUCTIONS =
   "CipherMap Zero-Egress Local Vericoding Referee. Use ciphermap_scan_all to enumerate PQC + Immunity findings, ciphermap_check_baseline_health to verify T0 baseline compile/syntax health before editing, ciphermap_extinguish_immunity to run 4-Gate verified codemods + ddmin patch salvage, ciphermap_inspect_rule to retrieve exact NIST/CWE safe guardrail primitives, ciphermap_verify_candidate_fix to test candidate patches inside an ephemeral network-denied sandbox without mutating live files, and ciphermap_verify_workspace_clean to verify zero findings and dual Ed25519 + ML-DSA-65 ProofBundles.";
 
@@ -235,10 +239,10 @@ function handleJsonRpcRequest(msg) {
             {
               type: "text",
               text: [
-                `CipherMap native binary (${EXPECTED_VERSION}) is not yet installed on PATH.`,
+                `CipherMap native binary (${EXPECTED_CLI_VERSION}) is not yet installed on PATH.`,
                 `To run ${toolName} locally with zero source-code egress:`,
                 `1. Download the signed native CLI & claim a 7-day corporate trial key at https://www.ciphermap.io/eval-pack#trial`,
-                `2. Place 'ciphermap' in /usr/local/bin or ~/.local/bin (or set CIPHERMAP_BIN) and export CIPHERMAP_LICENSE.`
+                `2. Export CIPHERMAP_LICENSE (auto-bootstraps on macOS, Windows & Linux) or place 'ciphermap' in /usr/local/bin or ~/.local/bin.`
               ].join("\n")
             }
           ]
@@ -255,32 +259,133 @@ function handleJsonRpcRequest(msg) {
   }
 }
 
+function writeJsonRpcReply(respObj, useContentLength) {
+  if (!respObj) return;
+  const serialized = JSON.stringify(respObj);
+  if (useContentLength) {
+    const byteLen = Buffer.byteLength(serialized, "utf8");
+    process.stdout.write(`Content-Length: ${byteLen}\r\n\r\n${serialized}`);
+  } else {
+    process.stdout.write(`${serialized}\n`);
+  }
+}
+
+function dispatchRawPayload(rawText, useContentLength) {
+  const trimmed = rawText.trim();
+  if (!trimmed) return;
+  let parsed;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    writeJsonRpcReply(
+      { jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } },
+      useContentLength
+    );
+    return;
+  }
+  const resp = handleJsonRpcRequest(parsed);
+  if (resp) {
+    writeJsonRpcReply(resp, useContentLength);
+  }
+}
+
 function serveIntrospectionStdio() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    crlfDelay: Infinity,
-    terminal: false
+  let buf = Buffer.alloc(0);
+  let useContentLength = false;
+
+  function drainBuffer(isFinal) {
+    while (buf.length > 0) {
+      // Strip leading CR/LF/space/tab between frames
+      let start = 0;
+      while (
+        start < buf.length &&
+        (buf[start] === 0x0d || buf[start] === 0x0a || buf[start] === 0x20 || buf[start] === 0x09)
+      ) {
+        start++;
+      }
+      if (start > 0) {
+        buf = buf.subarray(start);
+      }
+      if (buf.length === 0) break;
+
+      const headPreview = buf.subarray(0, Math.min(buf.length, 32)).toString("latin1");
+      if (/^content-length:/i.test(headPreview)) {
+        useContentLength = true;
+        const crlfSep = buf.indexOf("\r\n\r\n");
+        const lfSep = buf.indexOf("\n\n");
+        let headerEnd = -1;
+        let sepLen = 0;
+        if (crlfSep >= 0 && (lfSep < 0 || crlfSep <= lfSep)) {
+          headerEnd = crlfSep;
+          sepLen = 4;
+        } else if (lfSep >= 0) {
+          headerEnd = lfSep;
+          sepLen = 2;
+        }
+        if (headerEnd < 0) {
+          if (buf.length > 16_384) {
+            buf = Buffer.alloc(0);
+            writeJsonRpcReply(
+              { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Oversized header" } },
+              true
+            );
+          }
+          break;
+        }
+        const headerStr = buf.subarray(0, headerEnd).toString("latin1");
+        const m = /content-length\s*:\s*(\d+)/i.exec(headerStr);
+        if (!m) {
+          buf = buf.subarray(headerEnd + sepLen);
+          continue;
+        }
+        const contentLen = Number.parseInt(m[1], 10);
+        if (!Number.isSafeInteger(contentLen) || contentLen < 0 || contentLen > MAX_FRAME_BYTES) {
+          buf = Buffer.alloc(0);
+          writeJsonRpcReply(
+            { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Invalid Content-Length" } },
+            true
+          );
+          break;
+        }
+        const bodyStart = headerEnd + sepLen;
+        if (buf.length < bodyStart + contentLen) {
+          break;
+        }
+        const bodyText = buf.subarray(bodyStart, bodyStart + contentLen).toString("utf8");
+        buf = buf.subarray(bodyStart + contentLen);
+        dispatchRawPayload(bodyText, true);
+        continue;
+      }
+
+      const nlIdx = buf.indexOf(0x0a);
+      if (nlIdx < 0) {
+        if (isFinal) {
+          const trailing = buf.toString("utf8");
+          buf = Buffer.alloc(0);
+          dispatchRawPayload(trailing, useContentLength);
+        } else if (buf.length > MAX_FRAME_BYTES) {
+          buf = Buffer.alloc(0);
+          writeJsonRpcReply(
+            { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Frame exceeds maximum size" } },
+            useContentLength
+          );
+        }
+        break;
+      }
+      const lineText = buf.subarray(0, nlIdx).toString("utf8");
+      buf = buf.subarray(nlIdx + 1);
+      dispatchRawPayload(lineText, false);
+    }
+  }
+
+  process.stdin.on("data", (chunk) => {
+    const asBuf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, "utf8");
+    buf = buf.length === 0 ? asBuf : Buffer.concat([buf, asBuf]);
+    drainBuffer(false);
   });
 
-  rl.on("line", (line) => {
-    const trimmed = line.trim();
-    if (!trimmed || /^content-length:/i.test(trimmed)) return;
-    let parsed;
-    try {
-      parsed = JSON.parse(trimmed);
-    } catch {
-      process.stdout.write(
-        JSON.stringify({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }) + "\n"
-      );
-      return;
-    }
-    const resp = handleJsonRpcRequest(parsed);
-    if (resp) {
-      process.stdout.write(JSON.stringify(resp) + "\n");
-    }
-  });
-
-  rl.on("close", () => {
+  process.stdin.on("end", () => {
+    drainBuffer(true);
     process.exit(0);
   });
 }
@@ -292,7 +397,8 @@ async function main() {
     process.stdout.write(
       JSON.stringify({
         ok: true,
-        launcherVersion: EXPECTED_VERSION,
+        launcherVersion: SERVER_VERSION,
+        expectedCliVersion: EXPECTED_CLI_VERSION,
         toolCount: TOOL_MANIFEST.length,
         binaryFound: Boolean(found),
         binaryPath: found
@@ -351,5 +457,7 @@ module.exports = {
   resolveNativeTarget,
   handleJsonRpcRequest,
   TOOL_MANIFEST,
+  SERVER_VERSION,
+  EXPECTED_CLI_VERSION,
   EXPECTED_VERSION
 };
