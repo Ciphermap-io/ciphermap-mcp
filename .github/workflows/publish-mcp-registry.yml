@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Install mcp-publisher v1.8.9
         run: |
@@ -24,9 +24,16 @@ jobs:
           tar -xzf /tmp/mcp-publisher.tar.gz -C /tmp mcp-publisher
           chmod +x /tmp/mcp-publisher
 
-      - name: Validate & Publish via GitHub OIDC
+      - name: Validate & Publish via GitHub OIDC (Idempotent)
         run: |
           set -euo pipefail
           /tmp/mcp-publisher validate
+          SERVER_NAME="$(jq -r '.name' server.json)"
+          SERVER_VER="$(jq -r '.version' server.json)"
+          EXISTING="$(curl -fsSL "https://registry.modelcontextprotocol.io/v0/servers?search=ciphermap" | jq -r --arg n "$SERVER_NAME" --arg v "$SERVER_VER" '.servers[]? | select(.server.name==$n and .server.version==$v) | .server.version' | head -n 1 || true)"
+          if [ "$EXISTING" = "$SERVER_VER" ]; then
+            echo "✅ ${SERVER_NAME}@${SERVER_VER} is already published on registry.modelcontextprotocol.io; skipping duplicate publish."
+            exit 0
+          fi
           /tmp/mcp-publisher login github-oidc
           /tmp/mcp-publisher publish
