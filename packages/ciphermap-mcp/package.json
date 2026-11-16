@@ -10,6 +10,7 @@
   },
   "files": [
     "bin/",
+    "tool-manifest.json",
     "README.md"
   ],
   "engines": {

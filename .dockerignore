@@ -1,0 +1,7 @@
+.git
+.github
+examples
+docs
+node_modules
+*.md
+!packages/ciphermap-mcp/README.md

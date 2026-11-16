@@ -1,0 +1,362 @@
+[
+  {
+    "name": "ciphermap_scan_all",
+    "description": "Run a 100% local, zero-egress PQC + Immunity security scan across the confined workspace or a relative file/subdirectory, returning structured findings and required safe guardrail primitives.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "include_tests": {
+          "description": "Include test files in scan results (defaults to false).",
+          "type": "boolean"
+        },
+        "target_path": {
+          "description": "Optional relative file or directory path within the workspace to scan.",
+          "type": "string"
+        },
+        "workspace": {
+          "description": "Optional workspace directory (must reside within the server's confined root).",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Scan Workspace for PQC & Immunity Findings",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_inspect_rule",
+    "description": "Inspect the authoritative NIST FIPS / CWE contract, safe guardrail primitives, checklist, and before/after remediation examples for any PQC or Immunity rule ID.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "description": "Optional target language (e.g. go, typescript, python, rust, java) for language-bound guardrail primitives.",
+          "type": "string"
+        },
+        "rule_id": {
+          "description": "CipherMap rule identifier (e.g. IMM-SQLI-001, IMM-BOUND-001, PQC-GO-AST-002, PQC-001).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Inspect NIST FIPS / CWE Rule Contract",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_verify_candidate_fix",
+    "description": "Stage candidate_content ONLY inside an ephemeral temporary sandbox copy (never mutating the live workspace) and verify: (1) target rule_id finding is eliminated with zero new findings introduced, and (2) balanced syntax + confined offline compiler/test gates pass, returning structured counterexamples on failure.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_content": {
+          "description": "Complete proposed file contents to verify inside the ephemeral referee sandbox.",
+          "type": "string"
+        },
+        "file_path": {
+          "description": "Relative path to the target source file within the workspace.",
+          "type": "string"
+        },
+        "rule_id": {
+          "description": "Target CipherMap rule ID that the candidate fix must eliminate.",
+          "type": "string"
+        },
+        "workspace": {
+          "description": "Optional workspace directory within the server's confined root.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_path",
+        "candidate_content",
+        "rule_id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Verify Candidate Patch in Ephemeral Sandbox",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_verify_workspace_clean",
+    "description": "Verify that the confined workspace has zero remaining PQC or Immunity findings and cryptographically verify any dual-signed Ed25519 + NIST FIPS 204 ML-DSA-65 ProofBundle.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "include_tests": {
+          "description": "Include test files when verifying workspace cleanliness (defaults to false).",
+          "type": "boolean"
+        },
+        "proof_bundle_path": {
+          "description": "Optional relative path to immunity-proof-bundle-v1.json within the workspace.",
+          "type": "string"
+        },
+        "workspace": {
+          "description": "Optional workspace directory within the server's confined root.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Verify Zero Findings & Dual PQC ProofBundle",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_verify_dependencies",
+    "description": "Firewall proposed cryptographic and post-quantum dependencies against slopsquatting/typosquatting (Damerau-Levenshtein d_OSA <= 2), hallucinated PQC stems, and KyberSlash-vulnerable TIMING_UNSAFE_DEV_ONLY pure-script fallbacks.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ecosystem": {
+          "description": "Package ecosystem (go, npm, pypi, cargo, maven, nuget).",
+          "type": "string"
+        },
+        "fips_required": {
+          "description": "Require hardware/C constant-time FIPS 140-3 aligned implementations (defaults to false).",
+          "type": "boolean"
+        },
+        "packages": {
+          "description": "Proposed package coordinates to audit before installation.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "ecosystem",
+        "packages"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Firewall Crypto & PQC Dependencies",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_recommend_pqc_sdk",
+    "description": "Recommend audited, constant-time NIST FIPS 203/204/205 (ML-KEM, ML-DSA, SLH-DSA, Hybrid-TLS) SDKs and import idioms for a target language.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "fips_required": {
+          "description": "Filter to FIPS 140-3 / constant-time native modules only.",
+          "type": "boolean"
+        },
+        "language": {
+          "description": "Target language or ecosystem (go, typescript, python, rust, java, csharp).",
+          "type": "string"
+        },
+        "primitive": {
+          "description": "Target cryptographic primitive (e.g. ML-KEM, ML-DSA, SLH-DSA, Hybrid-TLS).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Recommend Constant-Time FIPS 203/204/205 SDK",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_generate_cbom",
+    "description": "Generate and schema-validate a CycloneDX 1.7 (or 1.6) Cryptographic Bill of Materials (CBOM) for the confined workspace, returning asset breakdowns, quantum-readiness counts, and optional confined workspace file output.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "include_tests": {
+          "description": "Include test files in cryptographic discovery (defaults to false).",
+          "type": "boolean"
+        },
+        "output_path": {
+          "description": "Optional workspace-relative path to write the validated CycloneDX CBOM JSON.",
+          "type": "string"
+        },
+        "spec_version": {
+          "description": "CycloneDX specification version ('1.7' default or '1.6').",
+          "type": "string"
+        },
+        "target_path": {
+          "description": "Optional workspace-relative subdirectory or file to scan.",
+          "type": "string"
+        },
+        "workspace": {
+          "description": "Optional workspace path (must resolve to the server workspace root).",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Generate CycloneDX 1.7 / 1.6 CBOM",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_generate_pqc_wrapper",
+    "description": "Generate a zero-code NIST FIPS 203/204/205 post-quantum compensating control bundle (envoy, nginx, k8s-sidecar, ipsec, cert-manager, or cnsa-2.0) plus preflight verification script for legacy/COTS/infrastructure findings.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "include_tests": {
+          "description": "Include test files in scan (defaults to false).",
+          "type": "boolean"
+        },
+        "target_path": {
+          "description": "Optional workspace-relative subdirectory or file to scan.",
+          "type": "string"
+        },
+        "workspace": {
+          "description": "Optional workspace path (must resolve to the server workspace root).",
+          "type": "string"
+        },
+        "wrapper_type": {
+          "description": "Wrapper target ('auto', 'envoy', 'nginx', 'k8s-sidecar', 'ipsec', 'cert-manager', or 'cnsa-2.0'). Defaults to 'auto'.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Generate Zero-Code PQC Edge Wrapper",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_compliance_crosswalk",
+    "description": "Evaluate the confined workspace against 16 global statutory cryptographic mandates (CNSA 2.0, NIST IR 8547, OMB M-26-15, EU DORA, PCI DSS 4.0.1, FedRAMP Rev.5, HIPAA, etc.) and compute an optimal hypergraph hitting-set remediation schedule.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "include_tests": {
+          "description": "Include test files in scan (defaults to false).",
+          "type": "boolean"
+        },
+        "target_path": {
+          "description": "Optional workspace-relative subdirectory or file to scan.",
+          "type": "string"
+        },
+        "workspace": {
+          "description": "Optional workspace path (must resolve to the server workspace root).",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Evaluate 16-Mandate Compliance Crosswalk",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_extinguish_immunity",
+    "description": "Synthesize polyglot AST/AIConfig codemods and verify every candidate fix through CipherMap's 4-Gate Vericoding pipeline (Gate 1 lexical/AST + rescan dominance, Gate 2 pre-triggered/post-killed witness execution, Gate 3 native compiler/test + ddmin batch salvage, Gate 4 zero new findings). Defaults to dry-run preview (apply=false); pass apply=true to persist verified fixes.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "apply": {
+          "description": "Persist verified patches to workspace files (defaults to false for zero-mutation dry-run preview).",
+          "type": "boolean"
+        },
+        "enable_race": {
+          "description": "Enable concurrency/race detectors in Gate 3 native tests (defaults to false).",
+          "type": "boolean"
+        },
+        "helper_strategy": {
+          "description": "Helper emission strategy ('auto', 'inline', or 'shared'). Defaults to 'auto'.",
+          "type": "string"
+        },
+        "include_tests": {
+          "description": "Include test files in Immunity extinguish (defaults to false).",
+          "type": "boolean"
+        },
+        "proof_out_path": {
+          "description": "Optional workspace-relative path to write the dual Ed25519 + ML-DSA-65 ProofBundle JSON.",
+          "type": "string"
+        },
+        "rule_filter": {
+          "description": "Optional Immunity RuleIDs to restrict extinguish to (e.g. ['IMM-SQLI-001', 'IMM-SSRF-001']).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workspace": {
+          "description": "Optional workspace directory within the server's confined root.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Extinguish Bugs via 4-Gate Vericoding Pipeline",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ciphermap_check_baseline_health",
+    "description": "Run strictly read-only T0 compiler/syntax baseline probes (with Git tree-hash caching) across workspace modules, returning mathematical fault attributions (CUSTOMER_PREEXISTING_FAILURE vs. ENV_DEPENDENCY_BLOCKER) and unmodified culprit files/packages so AI agents never waste tokens trying to fix pre-broken customer builds.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "workspace": {
+          "description": "Optional workspace directory within the server's confined root.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Check T0 Compiler & Syntax Baseline Health",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]

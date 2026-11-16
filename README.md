@@ -2,6 +2,11 @@
 
 # CipherMap Local MCP Referee, `pre-commit` Hook & Multi-SCM CI Integration (`v1.0.6`)
 
+[![Validate MCP Server Schema & Stdio Protocol](https://github.com/Ciphermap-io/ciphermap-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Ciphermap-io/ciphermap-mcp/actions/workflows/ci.yml)
+[![Official MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.Ciphermap--io%2Fciphermap--mcp-7c3aed)](https://registry.modelcontextprotocol.io/v0/servers?search=ciphermap)
+[![CycloneDX CBOM](https://img.shields.io/badge/CycloneDX-1.6%20%26%201.7%20CBOM-0ea5e9)](https://cyclonedx.org/tool-center/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg)](LICENSE)
+
 Configuration templates, `pre-commit` hook definitions, and Official MCP Registry metadata (`server.json`) for running **[CipherMap](https://www.ciphermap.io)** (`v1.0.6`) as:
 1. A **100% local `stdio` Model Context Protocol (MCP) Referee** (`11` tools, `0` open network sockets) inside **Claude Code**, **Cursor**, **VS Code (`@mcp`)**, **GitHub Copilot**, and **Windsurf** (`ciphermap mcp --workspace .`).
 2. A **shift-left `pre-commit` hook** scanning staged diffs in `<250ms` (`--staged --offline`).
@@ -96,7 +101,7 @@ Use [`Ciphermap-io/ciphermap-action`](https://github.com/Ciphermap-io/ciphermap-
 
 ```yaml
       - name: Run CipherMap Zero-Egress PQC & CycloneDX 1.7 CBOM Gate
-        uses: Ciphermap-io/ciphermap-action@d4e04f4cbee44d60f7f2aa0ac981a4a3287eae9e # v1.0.6
+        uses: Ciphermap-io/ciphermap-action@563d4166c4bf1dfc3117aa7099396d0c1ee0c73d # v1.0.6
         with:
           fail-on: high
           target: cnsa-2.0
