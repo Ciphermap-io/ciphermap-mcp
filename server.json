@@ -4,7 +4,7 @@
   "title": "CipherMap PQC, CycloneDX 1.7 CBOM & Compliance Referee",
   "description": "Zero-egress PQC, CycloneDX 1.7 CBOM, CNSA 2.0/FIPS 203-205 & AI-config referee across 12 langs.",
   "version": "1.0.6",
-  "websiteUrl": "https://www.ciphermap.io",
+  "websiteUrl": "https://www.ciphermap.io/?utm_source=mcp_registry&utm_medium=directory&utm_campaign=mcp_ecosystem",
   "repository": {
     "id": "1442914839",
     "source": "github",
@@ -22,7 +22,7 @@
         "NIST FIPS 205 SLH-DSA",
         "NSA CNSA 2.0",
         "CycloneDX 1.6 & 1.7 (ECMA-424) CBOM",
-        "PCI-DSS 4.0.1 Req 12.3.4",
+        "PCI DSS v4.0.1 Req 12.3.3 & 4.2.1.1",
         "FedRAMP 20x / CMMC 2.0"
       ]
     }

@@ -8,14 +8,14 @@
 [![CycloneDX CBOM](https://img.shields.io/badge/CycloneDX-1.6%20%26%201.7%20CBOM-0ea5e9)](https://cyclonedx.org/tool-center/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg)](LICENSE)
 
-Configuration templates, `pre-commit` hook definitions, and Official MCP Registry metadata (`server.json`) for running **[CipherMap](https://www.ciphermap.io)** (`v1.0.6`) as:
+Configuration templates, `pre-commit` hook definitions, and Official MCP Registry metadata (`server.json`) for running **[CipherMap](https://www.ciphermap.io/?utm_source=mcp_readme&utm_medium=readme&utm_campaign=mcp_ecosystem&utm_content=hero_brand)** (`v1.0.6`) as:
 1. A **100% local `stdio` Model Context Protocol (MCP) Referee** (`11` tools, `0` open network sockets) inside **Claude Code**, **Cursor**, **VS Code (`@mcp`)**, **GitHub Copilot**, and **Windsurf** (`ciphermap mcp --workspace .`).
 2. A **shift-left `pre-commit` hook** scanning staged diffs in `<250ms` (`--staged --offline`).
 3. A **zero-egress CI/CD gate & signed CycloneDX 1.6 / 1.7 (ECMA-424) CBOM generator** across **GitHub Actions**, **Bitbucket Pipelines / Data Center**, **GitLab CI**, and **Azure DevOps**.
 
-[![Public GitHub Repo PQC Scanner](https://www.ciphermap.io/scan/badge/github/open-quantum-safe/liboqs-go)](https://www.ciphermap.io/scan?utm_source=mcp_readme&utm_medium=badge)
+[![Public GitHub Repo PQC Scanner](https://www.ciphermap.io/scan/badge/github/open-quantum-safe/liboqs-go)](https://www.ciphermap.io/scan?utm_source=mcp_readme&utm_medium=badge&utm_campaign=mcp_ecosystem&utm_content=scan_badge)
 
-> **Zero Source Egress:** CipherMap ships as native Apple Developer ID (`ZLF7244KA7`, Apple Notarized) and Microsoft Authenticode signed binaries ([download evaluation pack](https://www.ciphermap.io/eval-pack)). No source code, `.p12`/`.jks` keystores, or AST fragments ever leave your workstation or self-hosted runner (`--offline --no-telemetry`).
+> **Zero Source Egress:** CipherMap ships as native Apple Developer ID (`ZLF7244KA7`, Apple Notarized) and Microsoft Authenticode signed binaries ([download evaluation pack](https://www.ciphermap.io/eval-pack?utm_source=mcp_readme&utm_medium=readme&utm_campaign=mcp_ecosystem&utm_content=eval_pack)). No source code, `.p12`/`.jks` keystores, or AST fragments ever leave your workstation or self-hosted runner (`--offline --no-telemetry`).
 
 ---
 
@@ -102,7 +102,7 @@ Use [`Ciphermap-io/ciphermap-action`](https://github.com/Ciphermap-io/ciphermap-
 
 ```yaml
       - name: Run CipherMap Zero-Egress PQC & CycloneDX 1.7 CBOM Gate
-        uses: Ciphermap-io/ciphermap-action@563d4166c4bf1dfc3117aa7099396d0c1ee0c73d # v1.0.6
+        uses: Ciphermap-io/ciphermap-action@928f39ae18db1ce5f69503eded1bc38cdfe6a127 # v1.0.6
         with:
           fail-on: high
           target: cnsa-2.0
@@ -124,5 +124,6 @@ Use [`Ciphermap-io/ciphermap-action`](https://github.com/Ciphermap-io/ciphermap-
             -F "bom=@cbom.cdx.json"
 ```
 
-- **Instant Public GitHub & Bitbucket URL Scanner:** [https://www.ciphermap.io/scan](https://www.ciphermap.io/scan)
-- **Methodology & Scope Boundaries:** [https://www.ciphermap.io/methodology](https://www.ciphermap.io/methodology)
+- **Instant Public GitHub & Bitbucket URL Scanner:** [ciphermap.io/scan](https://www.ciphermap.io/scan?utm_source=mcp_readme&utm_medium=readme&utm_campaign=mcp_ecosystem&utm_content=footer_scan)
+- **Methodology & Scope Boundaries:** [ciphermap.io/methodology](https://www.ciphermap.io/methodology?utm_source=mcp_readme&utm_medium=readme&utm_campaign=mcp_ecosystem&utm_content=footer_methodology)
+- **3PAO / QSA Assessor Workbench & 1-Page InfoSec Zero-Egress Memo:** [ciphermap.io/for-assessors](https://www.ciphermap.io/for-assessors?utm_source=mcp_readme&utm_medium=readme&utm_campaign=mcp_ecosystem&utm_content=footer_assessors) · [ciphermap.io/procurement-memo](https://www.ciphermap.io/procurement-memo?utm_source=mcp_readme&utm_medium=readme&utm_campaign=mcp_ecosystem&utm_content=footer_memo)

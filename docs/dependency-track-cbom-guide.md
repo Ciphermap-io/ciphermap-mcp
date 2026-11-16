@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Scan & Generate Signed CycloneDX CBOM + SARIF
-        uses: Ciphermap-io/ciphermap-action@4f5d1c8a0c4bf2aadee801b70475e67833095ac8 # v1.0.6
+        uses: Ciphermap-io/ciphermap-action@928f39ae18db1ce5f69503eded1bc38cdfe6a127 # v1.0.6
         with:
           fail-on: high
           target: cnsa-2.0
