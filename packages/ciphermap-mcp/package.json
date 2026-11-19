@@ -7,7 +7,7 @@
   "license": "MIT",
   "type": "commonjs",
   "bin": {
-    "ciphermap-mcp": "./bin/ciphermap-mcp.js"
+    "ciphermap-mcp": "bin/ciphermap-mcp.js"
   },
   "files": [
     "bin/",
