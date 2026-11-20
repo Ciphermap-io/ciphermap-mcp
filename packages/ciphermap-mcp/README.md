@@ -9,7 +9,7 @@ Zero-dependency local `stdio` Model Context Protocol (MCP) launcher for **[Ciphe
 
 - **Official MCP Registry ID:** `io.github.Ciphermap-io/ciphermap-mcp`
 - **Signed Native Binaries:** Apple Developer ID (`ZLF7244KA7`, **Apple Notarized**) on macOS (`arm64` / `amd64`), **Microsoft Public-Trust Authenticode** on Windows (`amd64` / `arm64`), and Ed25519 `.text`-sealed static Linux binaries (`amd64` / `arm64`).
-- **Claim Free 7-Day Corporate Trial Key / Offline Eval Pack:** [ciphermap.io/eval-pack#trial](https://www.ciphermap.io/eval-pack?utm_source=npm_mcp&utm_medium=readme#trial)
+- **Signed Offline CLI & Guided Evaluation:** [ciphermap.io/eval-pack](https://www.ciphermap.io/eval-pack?utm_source=npm_mcp&utm_medium=readme) · [Book 20-Min Live Repo Proof](https://www.ciphermap.io/book?utm_source=npm_mcp&utm_medium=readme) · [Commercial Plans](https://www.ciphermap.io/pricing?utm_source=npm_mcp&utm_medium=readme)
 - **Source & Multi-SCM CI Templates:** [github.com/Ciphermap-io/ciphermap-mcp](https://github.com/Ciphermap-io/ciphermap-mcp)
 
 ---
@@ -39,7 +39,7 @@ claude mcp add ciphermap -- npx -y @ciphermap/mcp --workspace .
 ### How Binary Resolution Works (`0` Bundled Binaries, `0` Source Egress)
 1. **Local Binary First:** Uses `ciphermap` already installed on `PATH`, `CIPHERMAP_BIN`, `/usr/local/bin/ciphermap`, `/opt/homebrew/bin/ciphermap`, `~/.local/bin/ciphermap`, or `~/.cache/ciphermap/bin/ciphermap`.
 2. **Authenticated Multi-OS Bootstrap (Optional):** When `CIPHERMAP_LICENSE` is set and no local binary exists, downloads the signed native CLI for your OS/CPU (`darwin-arm64`, `darwin-amd64`, `windows-amd64`, `windows-arm64`, `linux-amd64`, `linux-arm64`) over TLS 1.2+ from `https://www.ciphermap.io/api/dl/ci-cli`, verifies the 64-hex `X-CipherMap-SHA256` digest, and atomically installs it into `~/.cache/ciphermap/bin/`.
-3. **Zero-Config IDE Introspection:** If no binary or key is present yet, serves full MCP JSON-RPC 2.0 (`Content-Length` + newline framing) so IDEs immediately discover all 11 tool schemas and link directly to trial setup.
+3. **Zero-Config IDE Introspection:** If no binary or key is present yet, serves full MCP JSON-RPC 2.0 (`Content-Length` + newline framing) so IDEs immediately discover all 11 tool schemas and link directly to CLI and evaluation setup.
 
 ---
 

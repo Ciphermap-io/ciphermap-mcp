@@ -69,7 +69,7 @@ test("@ciphermap/mcp --introspect-only speaks newline-delimited MCP JSON-RPC 2.0
   assert.equal(lines[1].result.tools.length, 11);
   assert.equal(lines[2].id, 3);
   assert.equal(lines[2].result.isError, true);
-  assert.match(lines[2].result.content[0].text, /eval-pack#trial/);
+  assert.match(lines[2].result.content[0].text, /ciphermap\.io\/eval-pack/);
   assert.equal(lines[3].id, 4);
 });
 

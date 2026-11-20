@@ -68,7 +68,7 @@ ciphermap-readiness-gate:
           trap 'rm -f "$installer"' EXIT
           http_code="$(curl --proto '=https' --tlsv1.2 --silent --show-error --location --max-time 60 -w '%{http_code}' --output "$installer" "https://www.ciphermap.io/install.sh?src=gitlab-component" || true)"
           if [ "${http_code}" = "503" ]; then
-            echo "CipherMap public /install.sh is staged; configure CIPHERMAP_LICENSE_KEY (free 7-day trial or commercial key from https://www.ciphermap.io/eval-pack#trial) on Linux x86_64 to use /api/dl/ci-cli, or pre-bake /usr/local/bin/ciphermap on your self-hosted runner." >&2
+            echo "CipherMap public /install.sh is staged; configure CIPHERMAP_LICENSE_KEY (guided evaluation or commercial key via https://www.ciphermap.io/pricing) on Linux x86_64 to use /api/dl/ci-cli, or pre-bake /usr/local/bin/ciphermap on your self-hosted runner." >&2
             exit 1
           fi
           [ "${http_code}" = "200" ] || { echo "Failed to fetch CipherMap installer (HTTP ${http_code})" >&2; exit 1; }

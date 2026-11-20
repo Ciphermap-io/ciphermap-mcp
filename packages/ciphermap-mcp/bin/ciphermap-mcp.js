@@ -241,7 +241,7 @@ function handleJsonRpcRequest(msg) {
               text: [
                 `CipherMap native binary (${EXPECTED_CLI_VERSION}) is not yet installed on PATH.`,
                 `To run ${toolName} locally with zero source-code egress:`,
-                `1. Download the signed native CLI & claim a 7-day corporate trial key at https://www.ciphermap.io/eval-pack#trial`,
+                `1. Download the signed native CLI at https://www.ciphermap.io/eval-pack (or request a guided evaluation key at https://www.ciphermap.io/book)`,
                 `2. Export CIPHERMAP_LICENSE (auto-bootstraps on macOS, Windows & Linux) or place 'ciphermap' in /usr/local/bin or ~/.local/bin.`
               ].join("\n")
             }
